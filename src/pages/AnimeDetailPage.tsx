@@ -181,7 +181,8 @@ export default function AnimeDetailPage() {
 
   const updateScore = async (score: number) => {
     if (!user || !anime) return;
-    const validScore = Math.max(1, Math.min(10, score));
+    // Clamp to 1.0-10.0 and round to one decimal place
+    const validScore = Math.max(1, Math.min(10, Math.round(score * 10) / 10));
     setUserScore(validScore);
     setScoreInput(String(validScore));
 
@@ -206,9 +207,11 @@ export default function AnimeDetailPage() {
   };
 
   const handleScoreSubmit = () => {
-    const score = parseInt(scoreInput, 10);
+    const score = parseFloat(scoreInput);
     if (!isNaN(score) && score >= 1 && score <= 10) {
-      updateScore(score);
+      // Round to one decimal place
+      const roundedScore = Math.round(score * 10) / 10;
+      updateScore(roundedScore);
     }
   };
 
@@ -455,15 +458,16 @@ export default function AnimeDetailPage() {
                         type="number"
                         min="1"
                         max="10"
+                        step="0.1"
                         value={scoreInput}
                         onChange={(e) => setScoreInput(e.target.value)}
-                        className="input w-20 text-center"
+                        className="input w-20 text-center no-spinners"
                         placeholder="1-10"
                       />
                       <span className="text-slate-400">/ 10</span>
                       <button
                         onClick={handleScoreSubmit}
-                        disabled={!scoreInput || parseInt(scoreInput) < 1 || parseInt(scoreInput) > 10}
+                        disabled={!scoreInput || parseFloat(scoreInput) < 1 || parseFloat(scoreInput) > 10}
                         className="btn btn-primary btn-sm"
                       >
                         Rate

@@ -178,6 +178,17 @@
   .aspect-poster {
     aspect-r: 2/3;
   }
+
+  .no-spinners {
+    appearance: none;
+    -moz-appearance: textfield;
+  }
+
+  .no-spinners::-webkit-outer-spin-button,
+  .no-spinners::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
 }
 
 .star-rating {
