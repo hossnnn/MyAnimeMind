@@ -186,13 +186,25 @@ export default function MoodMatcherPage() {
           {surpriseResult && (
             <div className="card p-6 animate-fadeIn">
               <div className="flex gap-4">
-                {surpriseResult.coverImage?.medium && (
+                {surpriseResult.coverImage?.extraLarge ? (
+                  <img
+                    src={surpriseResult.coverImage.extraLarge}
+                    alt=""
+                    className="w-24 h-36 object-cover rounded-lg"
+                  />
+                ) : surpriseResult.coverImage?.large ? (
+                  <img
+                    src={surpriseResult.coverImage.large}
+                    alt=""
+                    className="w-24 h-36 object-cover rounded-lg"
+                  />
+                ) : surpriseResult.coverImage?.medium ? (
                   <img
                     src={surpriseResult.coverImage.medium}
                     alt=""
                     className="w-24 h-36 object-cover rounded-lg"
                   />
-                )}
+                ) : null}
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-white mb-2">
                     {surpriseResult.title.english || surpriseResult.title.romaji}
@@ -357,7 +369,21 @@ export default function MoodMatcherPage() {
                     className="card card-hover p-4 group"
                   >
                     <div className="flex gap-4">
-                      {result.coverImage?.medium ? (
+                      {result.coverImage?.extraLarge ? (
+                        <img
+                          src={result.coverImage.extraLarge}
+                          alt={result.title.english || result.title.romaji || ''}
+                          className="w-20 h-28 object-cover rounded-lg"
+                          loading="lazy"
+                        />
+                      ) : result.coverImage?.large ? (
+                        <img
+                          src={result.coverImage.large}
+                          alt={result.title.english || result.title.romaji || ''}
+                          className="w-20 h-28 object-cover rounded-lg"
+                          loading="lazy"
+                        />
+                      ) : result.coverImage?.medium ? (
                         <img
                           src={result.coverImage.medium}
                           alt={result.title.english || result.title.romaji || ''}

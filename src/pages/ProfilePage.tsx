@@ -459,7 +459,21 @@ export default function ProfilePage() {
                 className="group"
               >
                 <div className="relative aspect-poster rounded-lg overflow-hidden bg-slate-800 mb-3">
-                  {entry.anime?.cover_image_medium ? (
+                  {entry.anime?.cover_image_extra_large ? (
+                    <img
+                      src={entry.anime.cover_image_extra_large}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                  ) : entry.anime?.cover_image_large ? (
+                    <img
+                      src={entry.anime.cover_image_large}
+                      alt=""
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      loading="lazy"
+                    />
+                  ) : entry.anime?.cover_image_medium ? (
                     <img
                       src={entry.anime.cover_image_medium}
                       alt=""

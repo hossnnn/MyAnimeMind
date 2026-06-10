@@ -85,6 +85,7 @@ export default function AnimeDetailPage() {
         year: animeData.startDate?.year,
         cover_image_medium: animeData.coverImage?.medium,
         cover_image_large: animeData.coverImage?.large,
+        cover_image_extra_large: animeData.coverImage?.extraLarge,
         banner_image: animeData.bannerImage,
         average_score: animeData.averageScore,
         popularity: animeData.popularity,

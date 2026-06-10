@@ -111,6 +111,7 @@ export default function SearchPage() {
         year: selectedAnime.startDate?.year,
         cover_image_medium: selectedAnime.coverImage?.medium,
         cover_image_large: selectedAnime.coverImage?.large,
+        cover_image_extra_large: selectedAnime.coverImage?.extraLarge,
         banner_image: selectedAnime.bannerImage,
         average_score: selectedAnime.averageScore,
         popularity: selectedAnime.popularity,
@@ -211,7 +212,21 @@ export default function SearchPage() {
                   className="group text-left"
                 >
                   <div className="relative aspect-poster rounded-lg overflow-hidden bg-slate-800 mb-3">
-                    {anime.coverImage?.medium ? (
+                    {anime.coverImage?.extraLarge ? (
+                      <img
+                        src={anime.coverImage.extraLarge}
+                        alt={anime.title.english || anime.title.romaji || 'Anime'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : anime.coverImage?.large ? (
+                      <img
+                        src={anime.coverImage.large}
+                        alt={anime.title.english || anime.title.romaji || 'Anime'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : anime.coverImage?.medium ? (
                       <img
                         src={anime.coverImage.medium}
                         alt={anime.title.english || anime.title.romaji || 'Anime'}
@@ -297,7 +312,13 @@ export default function SearchPage() {
                 )}
 
                 <div className="flex gap-4 mb-6">
-                  {selectedAnime.coverImage?.large ? (
+                  {selectedAnime.coverImage?.extraLarge ? (
+                    <img
+                      src={selectedAnime.coverImage.extraLarge}
+                      alt=""
+                      className="w-32 h-48 object-cover rounded-lg -mt-16 relative bg-slate-700"
+                    />
+                  ) : selectedAnime.coverImage?.large ? (
                     <img
                       src={selectedAnime.coverImage.large}
                       alt=""

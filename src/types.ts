@@ -27,6 +27,7 @@ export interface AnimeCache {
   year: number | null;
   cover_image_medium: string | null;
   cover_image_large: string | null;
+  cover_image_extra_large: string | null;
   banner_image: string | null;
   average_score: number | null;
   popularity: number;

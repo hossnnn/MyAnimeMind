@@ -124,7 +124,21 @@ export default function HomePage() {
                   className="group"
                 >
                   <div className="relative aspect-poster rounded-lg overflow-hidden bg-slate-800 mb-3">
-                    {anime.coverImage?.medium ? (
+                    {anime.coverImage?.extraLarge ? (
+                      <img
+                        src={anime.coverImage.extraLarge}
+                        alt={anime.title.english || anime.title.romaji || 'Anime'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : anime.coverImage?.large ? (
+                      <img
+                        src={anime.coverImage.large}
+                        alt={anime.title.english || anime.title.romaji || 'Anime'}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : anime.coverImage?.medium ? (
                       <img
                         src={anime.coverImage.medium}
                         alt={anime.title.english || anime.title.romaji || 'Anime'}

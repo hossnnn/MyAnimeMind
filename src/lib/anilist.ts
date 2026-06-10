@@ -32,7 +32,7 @@ export interface AniListSearchResult {
     english: string | null;
     romaji: string | null;
   };
-  coverImage: { medium: string | null; large: string | null };
+  coverImage: { medium: string | null; large: string | null; extraLarge: string | null };
   episodes: number | null;
   averageScore: number | null;
   genres?: string[];
@@ -80,7 +80,7 @@ const TRENDING_QUERY = `
       media(type: ANIME, sort: TRENDING_DESC) {
         id
         title { english romaji }
-        coverImage { medium }
+        coverImage { medium large extraLarge }
         episodes
         averageScore
       }
@@ -101,7 +101,7 @@ const MOOD_QUERY = `
       ) {
         id
         title { english romaji }
-        coverImage { medium }
+        coverImage { medium large extraLarge }
         episodes
         averageScore
         genres
@@ -116,7 +116,7 @@ const TOP_RATED_QUERY = `
       media(type: ANIME, sort: SCORE_DESC, averageScore_greater: 70) {
         id
         title { english romaji }
-        coverImage { medium }
+        coverImage { medium large extraLarge }
         episodes
         averageScore
       }
