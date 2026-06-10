@@ -49,7 +49,7 @@ export default function HomePage() {
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
             Track. Discover.
-            <span className="block gradient-text mt-2">Share Your Anime Story</span>
+            <span className="block gradient-text mt-2">Track Your Anime Story</span>
           </h1>
 
           <p className="text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto mb-10">
