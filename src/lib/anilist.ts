@@ -32,7 +32,7 @@ export interface AniListSearchResult {
     english: string | null;
     romaji: string | null;
   };
-  coverImage: { medium: string | null };
+  coverImage: { medium: string | null; large: string | null };
   episodes: number | null;
   averageScore: number | null;
   genres?: string[];
@@ -44,7 +44,7 @@ const SEARCH_QUERY = `
       media(search: $search, type: ANIME, sort: POPULARITY_DESC) {
         id
         title { english romaji }
-        coverImage { medium }
+        coverImage { medium large }
         episodes
         averageScore
       }

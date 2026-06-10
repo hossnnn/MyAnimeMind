@@ -27,6 +27,7 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<'overview' | 'list' | 'stats'>('overview');
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({ display_name: '', bio: '', is_public: true });
+  const [equippedItems, setEquippedItems] = useState<string[]>([]);
 
   useEffect(() => {
     loadProfile();
@@ -71,6 +72,16 @@ export default function ProfilePage() {
 
       if (entriesData) {
         setEntries(entriesData as (UserAnime & { anime: AnimeCache })[]);
+      }
+
+      // Load equipped items
+      const { data: equippedData } = await supabase
+        .from('equipped_items')
+        .select('item_type')
+        .eq('user_id', profile.id);
+
+      if (equippedData) {
+        setEquippedItems(equippedData.map((e) => e.item_type as string));
       }
 
       // Load stats
@@ -238,7 +249,11 @@ export default function ProfilePage() {
 
           <div className="relative px-6 pb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16">
-              <div className="w-32 h-32 rounded-xl bg-slate-800 border-4 border-slate-800 overflow-hidden shadow-xl flex-shrink-0">
+              <div className={`w-32 h-32 rounded-xl bg-slate-800 border-4 border-slate-800 overflow-hidden shadow-xl flex-shrink-0 relative ${
+                equippedItems.includes('avatar_effect') ? 'ring-4 ring-blue-400 animate-pulse' : ''
+              } ${
+                equippedItems.includes('border_style') ? 'ring-4 ring-yellow-400' : ''
+              }`}>
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
@@ -248,6 +263,11 @@ export default function ProfilePage() {
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600">
                     <User className="w-12 h-12 text-white" />
+                  </div>
+                )}
+                {equippedItems.includes('badge') && (
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center shadow-lg">
+                    <Trophy className="w-4 h-4 text-white" />
                   </div>
                 )}
               </div>

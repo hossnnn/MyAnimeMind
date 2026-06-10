@@ -11,6 +11,7 @@ import {
   ListVideo,
   Moon,
   Wallet,
+  ShoppingBag,
 } from 'lucide-react';
 
 interface LayoutProps {
@@ -38,6 +39,7 @@ export default function Layout({ children }: LayoutProps) {
   if (user) {
     navigation.push({ name: 'My List', href: '/my-list', icon: ListVideo });
     navigation.push({ name: 'Shop', href: '/shop', icon: Wallet });
+    navigation.push({ name: 'Inventory', href: '/inventory', icon: ShoppingBag });
   }
 
   return (

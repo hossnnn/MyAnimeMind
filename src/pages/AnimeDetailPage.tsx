@@ -31,6 +31,7 @@ export default function AnimeDetailPage() {
   const [fillerData, setFillerData] = useState<Map<number, FillerData>>(new Map());
   const [selectedStatus, setSelectedStatus] = useState<string>('');
   const [userScore, setUserScore] = useState<number>(0);
+  const [scoreInput, setScoreInput] = useState<string>('');
   const [showAllEpisodes, setShowAllEpisodes] = useState(false);
   const [hideFiller, setHideFiller] = useState(false);
   const [dropReason, setDropReason] = useState<string>('');
@@ -104,6 +105,7 @@ export default function AnimeDetailPage() {
       setUserEntry(animeEntry.data as UserAnime);
       setSelectedStatus(animeEntry.data.status);
       setUserScore(animeEntry.data.score || 0);
+      setScoreInput(animeEntry.data.score ? String(animeEntry.data.score) : '');
     }
 
     if (episodes.data) {
@@ -178,10 +180,34 @@ export default function AnimeDetailPage() {
 
   const updateScore = async (score: number) => {
     if (!user || !anime) return;
-    setUserScore(score);
+    const validScore = Math.max(1, Math.min(10, score));
+    setUserScore(validScore);
+    setScoreInput(String(validScore));
 
     if (userEntry) {
-      await supabase.from('user_anime').update({ score }).eq('id', userEntry.id);
+      await supabase.from('user_anime').update({ score: validScore }).eq('id', userEntry.id);
+    }
+
+    // Award tokens for rating if not already rated
+    if (!userEntry?.score) {
+      await supabase.from('token_transactions').insert({
+        user_id: user.id,
+        amount: 2,
+        reason: 'Rated an anime',
+      });
+      const { data } = await supabase.from('profiles').select('tokens').eq('id', user.id).single();
+      if (data) {
+        await supabase.from('profiles').update({ tokens: data.tokens + 2 }).eq('id', user.id);
+      }
+    }
+
+    loadUserData();
+  };
+
+  const handleScoreSubmit = () => {
+    const score = parseInt(scoreInput, 10);
+    if (!isNaN(score) && score >= 1 && score <= 10) {
+      updateScore(score);
     }
   };
 
@@ -320,14 +346,21 @@ export default function AnimeDetailPage() {
         <div className="flex flex-col md:flex-row gap-8 mb-8">
           {/* Cover Image */}
           <div className="flex-shrink-0 mx-auto">
-            {anime.coverImage?.large && (
+            {anime.coverImage?.extraLarge ? (
+              <img
+                src={anime.coverImage.extraLarge}
+                alt={anime.title.english || anime.title.romaji || 'Anime'}
+                className="w-56 h-84 object-cover rounded-xl shadow-2xl md:-mt-32 relative z-10 bg-slate-800"
+                loading="lazy"
+              />
+            ) : anime.coverImage?.large ? (
               <img
                 src={anime.coverImage.large}
                 alt={anime.title.english || anime.title.romaji || 'Anime'}
-                className="w-48 h-72 object-cover rounded-xl shadow-2xl md:-mt-32 relative z-10 bg-slate-800"
+                className="w-56 h-84 object-cover rounded-xl shadow-2xl md:-mt-32 relative z-10 bg-slate-800"
                 loading="lazy"
               />
-            )}
+            ) : null}
           </div>
 
           {/* Info */}
@@ -416,22 +449,24 @@ export default function AnimeDetailPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-slate-300 mb-2">Your Rating</label>
-                    <div className="flex gap-1">
-                      {Array.from({ length: 10 }, (_, i) => i + 1).map((score) => (
-                        <button
-                          key={score}
-                          onClick={() => updateScore(score)}
-                          className={`p-2 rounded transition-colors ${
-                            score <= userScore
-                              ? 'bg-yellow-500/20 text-yellow-400'
-                              : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
-                          }`}
-                        >
-                          <Star
-                            className={`w-4 h-4 ${score <= userScore ? 'fill-yellow-400' : ''}`}
-                          />
-                        </button>
-                      ))}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="1"
+                        max="10"
+                        value={scoreInput}
+                        onChange={(e) => setScoreInput(e.target.value)}
+                        className="input w-20 text-center"
+                        placeholder="1-10"
+                      />
+                      <span className="text-slate-400">/ 10</span>
+                      <button
+                        onClick={handleScoreSubmit}
+                        disabled={!scoreInput || parseInt(scoreInput) < 1 || parseInt(scoreInput) > 10}
+                        className="btn btn-primary btn-sm"
+                      >
+                        Rate
+                      </button>
                     </div>
                   </div>
                 </div>

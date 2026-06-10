@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import type { Profile } from '../types';
 
@@ -8,6 +8,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, username: string) => Promise<{ error: Error | null }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,11 +17,40 @@ const AuthContext = createContext<AuthContextType>({
   signUp: async () => ({ error: new Error('Not initialized') }),
   signIn: async () => ({ error: new Error('Not initialized') }),
   signOut: async () => {},
+  refreshUser: async () => {},
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const fetchProfile = useCallback(async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (!error && data) {
+        setUser(data as Profile);
+      }
+    } catch {
+      // Silently handle profile fetch errors
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const refreshUser = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user) {
+      await fetchProfile(session.user.id);
+    } else {
+      setUser(null);
+    }
+    setLoading(false);
+  }, [fetchProfile]);
 
   useEffect(() => {
     let mounted = true;
@@ -47,38 +77,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_OUT') {
-        setUser(null);
-        setLoading(false);
-      } else if (session?.user) {
-        await fetchProfile(session.user.id);
-      }
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      // Wrap async work in IIFE to avoid deadlock
+      (async () => {
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setLoading(false);
+        } else if (event === 'SIGNED_IN' && session?.user) {
+          await fetchProfile(session.user.id);
+        } else if (session?.user) {
+          await fetchProfile(session.user.id);
+        }
+      })();
     });
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
-
-  async function fetchProfile(userId: string) {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (!error && data) {
-        setUser(data as Profile);
-      }
-    } catch {
-      // Silently handle profile fetch errors
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [fetchProfile]);
 
   async function signUp(email: string, password: string, username: string) {
     try {
@@ -119,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signIn,
     signOut,
+    refreshUser,
   };
 
   return (

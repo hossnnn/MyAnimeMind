@@ -37,25 +37,28 @@ function AuthForm({ mode }: { mode: 'login' | 'signup' }) {
 
     setLoading(true);
 
-    if (mode === 'login') {
-      const { error } = await signIn(formData.email, formData.password);
-      if (error) {
-        setError(error.message || 'Invalid email or password');
-        setLoading(false);
-        return;
+    try {
+      if (mode === 'login') {
+        const { error } = await signIn(formData.email, formData.password);
+        if (error) {
+          setError(error.message || 'Invalid email or password');
+          setLoading(false);
+          return;
+        }
+      } else {
+        const { error } = await signUp(formData.email, formData.password, formData.username);
+        if (error) {
+          setError(error.message || 'Failed to create account');
+          setLoading(false);
+          return;
+        }
       }
-      navigate('/');
-    } else {
-      const { error } = await signUp(formData.email, formData.password, formData.username);
-      if (error) {
-        setError(error.message || 'Failed to create account');
-        setLoading(false);
-        return;
-      }
-      navigate('/');
+      // Navigate immediately - auth state will update via onAuthStateChange
+      navigate('/', { replace: true });
+    } catch (err) {
+      setError('An unexpected error occurred');
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

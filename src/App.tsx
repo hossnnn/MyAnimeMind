@@ -9,6 +9,7 @@ import MoodMatcherPage from './pages/MoodMatcherPage';
 import MyListPage from './pages/MyListPage';
 import ProfilePage from './pages/ProfilePage';
 import ShopPage from './pages/ShopPage';
+import InventoryPage from './pages/InventoryPage';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
             <Route path="/my-list" element={<MyListPage />} />
             <Route path="/profile/:username" element={<ProfilePage />} />
             <Route path="/shop" element={<ShopPage />} />
+            <Route path="/inventory" element={<InventoryPage />} />
           </Routes>
         </Layout>
       </BrowserRouter>

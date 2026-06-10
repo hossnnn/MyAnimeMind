@@ -143,3 +143,11 @@ export interface MoodAnswer {
   timePreference: string;
   exclusions: string[];
 }
+
+export interface EquippedItem {
+  id: string;
+  user_id: string;
+  item_type: string;
+  item_data: Record<string, unknown>;
+  created_at: string;
+}
