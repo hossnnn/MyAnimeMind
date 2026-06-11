@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if this file modification should be blocked. The user has requested that README.md files should NEVER be modified, and only files in the src/ directory should be changed.\n\nTool input: $ARGUMENTS\n\nRespond with JSON:\n{\n  \"decision\": \"allow\" | \"block\",\n  \"reason\": \"explanation if blocked\"\n}\n\nBlock if:\n- The file_path ends with README.md (case insensitive)\n- The file_path is NOT inside the src/ directory\n\nAllow only if:\n- The file is inside src/ directory (path contains /src/)\n- OR it's a config file (.claude/, .gitignore, package.json, tsconfig, etc.)\n\nNever block:\n- Files in src/ directory\n- Config files in project root",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
