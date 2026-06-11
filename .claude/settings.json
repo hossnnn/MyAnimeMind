@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "prompt",
-            "prompt": "Check if this file modification should be blocked. The user has requested that README.md files should NEVER be modified, and only files in the src/ directory should be changed.\n\nTool input: $ARGUMENTS\n\nRespond with JSON:\n{\n  \"decision\": \"allow\" | \"block\",\n  \"reason\": \"explanation if blocked\"\n}\n\nBlock if:\n- The file_path ends with README.md (case insensitive)\n- The file_path is NOT inside the src/ directory\n\nAllow only if:\n- The file is inside src/ directory (path contains /src/)\n- OR it's a config file (.claude/, .gitignore, package.json, tsconfig, etc.)\n\nNever block:\n- Files in src/ directory\n- Config files in project root",
+            "prompt": "Check if this file modification should be blocked. The user has requested that README.md files should NEVER be modified, and only files in the src/ directory should be changed.\n\nTool input: $ARGUMENTS\n\nRespond with JSON:\n{\n  \"decision\": \"allow\" | \"block\",\n  \"reason\": \"explanation if blocked\"\n}\n\nBlock if:\n- The file_path ends with README.md (case insensitive)\n\nAllow if:\n- The file is inside src/ directory (path contains /src/)\n- OR it's a config file (.claude/, .gitignore, package.json, tsconfig.json, etc.)\n- OR it's a static asset file (index.html, public/ directory, favicon files)\n- OR it's a Vite config file (vite.config.ts, tailwind.config.js, postcss.config.js, eslint.config.js)\n\nBlock otherwise.",
             "timeout": 10
           }
         ]
