@@ -10,6 +10,9 @@ export interface Profile {
   tokens: number;
   created_at: string;
   updated_at: string;
+  avatar_unlocked: boolean;
+  avatar_character_id: number | null;
+  avatar_character_name: string | null;
 }
 
 export interface AnimeCache {

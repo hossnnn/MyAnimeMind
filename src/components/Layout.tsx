@@ -90,7 +90,17 @@ export default function Layout({ children }: LayoutProps) {
                     to={`/profile/${user.username}`}
                     className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
                   >
-                    <User className="w-4 h-4" />
+                    <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center ring-2 ring-slate-700">
+                      {user.avatar_url ? (
+                        <img
+                          src={user.avatar_url}
+                          alt={user.avatar_character_name || ''}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <User className="w-4 h-4 text-white" />
+                      )}
+                    </div>
                     <span className="text-sm font-medium">{user.display_name || user.username}</span>
                     <div className="flex items-center gap-1 px-2 py-0.5 bg-indigo-500/20 rounded-full">
                       <Wallet className="w-3 h-3 text-indigo-400" />
@@ -99,9 +109,17 @@ export default function Layout({ children }: LayoutProps) {
                   </Link>
                   <Link
                     to={`/profile/${user.username}`}
-                    className="sm:hidden p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800"
+                    className="sm:hidden w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center ring-2 ring-slate-700"
                   >
-                    <User className="w-5 h-5" />
+                    {user.avatar_url ? (
+                      <img
+                        src={user.avatar_url}
+                        alt={user.avatar_character_name || ''}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="w-4 h-4 text-white" />
+                    )}
                   </Link>
                   <button
                     onClick={signOut}

@@ -14,6 +14,7 @@ import {
   Eye,
   EyeOff,
   Wallet,
+  Camera,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -249,7 +250,7 @@ export default function ProfilePage() {
 
           <div className="relative px-6 pb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-16">
-              <div className={`w-32 h-32 rounded-xl bg-slate-800 border-4 border-slate-800 overflow-hidden shadow-xl flex-shrink-0 relative ${
+              <div className={`w-32 h-32 rounded-full bg-slate-800 border-4 border-slate-800 overflow-hidden shadow-xl flex-shrink-0 relative ${
                 equippedItems.includes('avatar_effect') ? 'ring-4 ring-blue-400 animate-pulse' : ''
               } ${
                 equippedItems.includes('border_style') ? 'ring-4 ring-yellow-400' : ''
@@ -257,7 +258,7 @@ export default function ProfilePage() {
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
-                    alt=""
+                    alt={profile.avatar_character_name || ''}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -266,9 +267,18 @@ export default function ProfilePage() {
                   </div>
                 )}
                 {equippedItems.includes('badge') && (
-                  <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center shadow-lg">
+                  <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center shadow-lg ring-2 ring-slate-800">
                     <Trophy className="w-4 h-4 text-white" />
                   </div>
+                )}
+                {isOwner && (
+                  <Link
+                    to="/avatar-editor"
+                    className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 hover:opacity-100 transition-opacity"
+                    title="Change Avatar"
+                  >
+                    <Camera className="w-6 h-6 text-white" />
+                  </Link>
                 )}
               </div>
 
@@ -287,6 +297,11 @@ export default function ProfilePage() {
                   )}
                 </h1>
                 <p className="text-slate-400">@{profile.username}</p>
+                {profile.avatar_character_name && (
+                  <p className="text-indigo-400 text-xs mt-0.5">
+                    Avatar: {profile.avatar_character_name}
+                  </p>
+                )}
 
                 {editMode ? (
                   <textarea

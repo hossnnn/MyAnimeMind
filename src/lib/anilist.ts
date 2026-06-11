@@ -249,3 +249,84 @@ export async function getRandomRecommendation(): Promise<AniListSearchResult | n
     return null;
   }
 }
+
+// Character-related types and queries
+export interface AniListCharacter {
+  id: number;
+  name: {
+    full: string;
+    native: string | null;
+  };
+  image: {
+    medium: string | null;
+    large: string | null;
+  };
+}
+
+const CHARACTER_SEARCH_QUERY = `
+  query SearchCharacters($search: String) {
+    Page(page: 1, perPage: 20) {
+      characters(search: $search, sort: FAVOURITES_DESC) {
+        id
+        name { full native }
+        image { medium large }
+      }
+    }
+  }
+`;
+
+const ANIME_CHARACTERS_QUERY = `
+  query GetAnimeCharacters($id: Int) {
+    Media(id: $id, type: ANIME) {
+      characters(sort: ROLE, page: 1) {
+        edges {
+          role
+          node {
+            id
+            name { full native }
+            image { medium large }
+          }
+        }
+      }
+    }
+  }
+`;
+
+export async function searchCharacters(search: string): Promise<AniListCharacter[]> {
+  try {
+    const response = await fetch(ANILIST_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: CHARACTER_SEARCH_QUERY,
+        variables: { search },
+      }),
+    });
+    const json = await response.json();
+    return json.data?.Page?.characters || [];
+  } catch {
+    return [];
+  }
+}
+
+export interface AnimeCharacterEdge {
+  role: string;
+  node: AniListCharacter;
+}
+
+export async function getAnimeCharacters(animeId: number): Promise<AnimeCharacterEdge[]> {
+  try {
+    const response = await fetch(ANILIST_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: ANIME_CHARACTERS_QUERY,
+        variables: { id: animeId },
+      }),
+    });
+    const json = await response.json();
+    return json.data?.Media?.characters?.edges || [];
+  } catch {
+    return [];
+  }
+}
