@@ -263,6 +263,21 @@ export interface AniListCharacter {
   };
 }
 
+// Avatar search result with relation info for grouping
+export interface AvatarSearchResult extends AniListSearchResult {
+  format: string | null;
+  relations?: {
+    edges: Array<{
+      relationType: string;
+      node: {
+        id: number;
+        title: { english: string | null; romaji: string | null };
+        format: string | null;
+      };
+    }>;
+  };
+}
+
 const CHARACTER_SEARCH_QUERY = `
   query SearchCharacters($search: String) {
     Page(page: 1, perPage: 20) {
@@ -278,13 +293,46 @@ const CHARACTER_SEARCH_QUERY = `
 const ANIME_CHARACTERS_QUERY = `
   query GetAnimeCharacters($id: Int) {
     Media(id: $id, type: ANIME) {
-      characters(sort: ROLE, page: 1) {
+      characters(sort: ROLE, page: 1, perPage: 15) {
         edges {
           role
           node {
             id
             name { full native }
             image { medium large }
+          }
+        }
+      }
+    }
+  }
+`;
+
+// Avatar-specific search: exclude MOVIE, OVA, SPECIAL, and TV_SHORT
+// Only show TV series that are main entries
+const AVATAR_SEARCH_QUERY = `
+  query AvatarSearchAnime($search: String) {
+    Page(page: 1, perPage: 25) {
+      media(
+        search: $search,
+        type: ANIME,
+        format_in: [TV],
+        sort: POPULARITY_DESC,
+        isAdult: false
+      ) {
+        id
+        title { english romaji }
+        coverImage { medium large extraLarge }
+        episodes
+        averageScore
+        format
+        relations {
+          edges {
+            relationType
+            node {
+              id
+              title { english romaji }
+              format
+            }
           }
         }
       }
@@ -325,8 +373,95 @@ export async function getAnimeCharacters(animeId: number): Promise<AnimeCharacte
       }),
     });
     const json = await response.json();
-    return json.data?.Media?.characters?.edges || [];
+    const edges = json.data?.Media?.characters?.edges || [];
+    // Limit to exactly 15 characters, prioritizing MAIN > SUPPORTING > BACKGROUND
+    return edges.slice(0, 15);
   } catch {
     return [];
   }
+}
+
+// Avatar-specific search with grouping for seasons/sequels
+export async function searchAnimeForAvatar(search: string): Promise<AvatarSearchResult[]> {
+  try {
+    const response = await fetch(ANILIST_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query: AVATAR_SEARCH_QUERY,
+        variables: { search },
+      }),
+    });
+    const json = await response.json();
+    const results: AvatarSearchResult[] = json.data?.Page?.media || [];
+
+    // Group related anime (sequels, prequels, adaptations)
+    const grouped = groupRelatedAnime(results);
+    return grouped;
+  } catch {
+    return [];
+  }
+}
+
+// Group anime that share the same core franchise (sequels, prequels, etc.)
+function groupRelatedAnime(results: AvatarSearchResult[]): AvatarSearchResult[] {
+  const visited = new Set<number>();
+  const grouped: AvatarSearchResult[] = [];
+
+  for (const anime of results) {
+    if (visited.has(anime.id)) continue;
+
+    // Find all related anime (sequels, prequels, same franchise)
+    const relationIds = getRelatedIds(anime);
+    relationIds.forEach(id => visited.add(id));
+    visited.add(anime.id);
+
+    // Find the "main" entry (earliest TV series or most popular)
+    const relatedInResults = results.filter(a => relationIds.has(a.id) || a.id === anime.id);
+    const mainEntry = findMainEntry([anime, ...relatedInResults.filter(a => a.id !== anime.id)]);
+
+    // Only add if not already in grouped list
+    if (!grouped.find(g => g.id === mainEntry.id)) {
+      grouped.push(mainEntry);
+    }
+  }
+
+  return grouped.slice(0, 15); // Limit to 15 unique anime results
+}
+
+function getRelatedIds(anime: AvatarSearchResult): Set<number> {
+  const ids = new Set<number>();
+  const relationTypes = ['SEQUEL', 'PREQUEL', 'PARENT', 'ADAPTATION', 'SIDE_STORY', 'ALTERNATIVE'];
+
+  anime.relations?.edges?.forEach(edge => {
+    if (relationTypes.includes(edge.relationType)) {
+      // Only include TV format relations (not movies/OVAs)
+      if (edge.node.format === 'TV') {
+        ids.add(edge.node.id);
+      }
+    }
+  });
+
+  return ids;
+}
+
+function findMainEntry(entries: AvatarSearchResult[]): AvatarSearchResult {
+  // Prefer the first TV series (usually the original)
+  // If popularity is higher for a sequel, still prefer the original for character consistency
+  if (entries.length === 1) return entries[0];
+
+  // Sort by: first entry (original/earliest), then by popularity as tiebreaker
+  // This ensures we get characters from the main series, not a sequel
+  return entries.sort((a, b) => {
+    const aIsSequel = a.relations?.edges?.some(e => e.relationType === 'PREQUEL') ? 1 : 0;
+    const bIsSequel = b.relations?.edges?.some(e => e.relationType === 'PREQUEL') ? 1 : 0;
+
+    // Prefer entries that are NOT sequels (have prequels = they are sequels)
+    if (aIsSequel !== bIsSequel) {
+      return aIsSequel - bIsSequel;
+    }
+
+    // If both or neither are sequels, prefer higher popularity
+    return (b.averageScore || 0) - (a.averageScore || 0);
+  })[0];
 }

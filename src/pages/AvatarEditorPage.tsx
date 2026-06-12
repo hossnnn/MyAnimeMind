@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import {
-  searchAniList,
+  searchAnimeForAvatar,
   searchCharacters,
   getAnimeCharacters,
-  type AniListSearchResult,
+  type AvatarSearchResult,
   type AniListCharacter,
   type AnimeCharacterEdge,
 } from '../lib/anilist';
@@ -31,9 +31,9 @@ export default function AvatarEditorPage() {
   const [searchMode, setSearchMode] = useState<'anime' | 'character'>('anime');
   const [searchQuery, setSearchQuery] = useState('');
   const [searching, setSearching] = useState(false);
-  const [animeResults, setAnimeResults] = useState<AniListSearchResult[]>([]);
+  const [animeResults, setAnimeResults] = useState<AvatarSearchResult[]>([]);
   const [characterResults, setCharacterResults] = useState<AniListCharacter[]>([]);
-  const [selectedAnime, setSelectedAnime] = useState<AniListSearchResult | null>(null);
+  const [selectedAnime, setSelectedAnime] = useState<AvatarSearchResult | null>(null);
   const [animeCharacters, setAnimeCharacters] = useState<AnimeCharacterEdge[]>([]);
   const [loadingCharacters, setLoadingCharacters] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<AniListCharacter | null>(null);
@@ -112,7 +112,7 @@ export default function AvatarEditorPage() {
 
     setSearching(true);
     if (searchMode === 'anime') {
-      const results = await searchAniList(searchQuery);
+      const results = await searchAnimeForAvatar(searchQuery);
       setAnimeResults(results);
       setSelectedAnime(null);
       setAnimeCharacters([]);
@@ -123,7 +123,7 @@ export default function AvatarEditorPage() {
     setSearching(false);
   };
 
-  const handleSelectAnime = async (anime: AniListSearchResult) => {
+  const handleSelectAnime = async (anime: AvatarSearchResult) => {
     setSelectedAnime(anime);
     setLoadingCharacters(true);
     const characters = await getAnimeCharacters(anime.id);
